@@ -20,6 +20,7 @@ use Winter\Pages\Classes\ObjectHelper;
 use Winter\Pages\Classes\Page as StaticPage;
 use Winter\Pages\Classes\SnippetManager;
 use Winter\Pages\FormWidgets\MenuItemSearch;
+use Winter\Pages\FormWidgets\MenuItems;
 use Winter\Pages\Plugin as PagesPlugin;
 use Winter\Pages\Widgets\MenuList;
 use Winter\Pages\Widgets\PageList;
@@ -195,6 +196,10 @@ class Index extends Controller
 
         if (Request::ajax() && Request::input('formWidgetAlias')) {
             $this->bindFormWidgetToController();
+        } elseif (Request::ajax() && ($alias = Request::input('menuItemFormAlias'))) {
+            // Requests from the menu item editor popup, which lives outside the
+            // object form and so posts no object context of its own.
+            MenuItems::makeItemFormWidget($this, $alias);
         }
     }
 

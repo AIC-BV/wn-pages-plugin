@@ -10,6 +10,7 @@
         data-message-cmsPage-required="<?= e(trans($this->cmsPageRequiredMessage)) ?>"
         data-new-item-title="<?= e(trans($this->newItemTitle)) ?>"
     >
+        <input type="hidden" name="menuItemFormAlias" value="<?= e($itemFormWidget->alias) ?>" />
         <?= $itemFormWidget->render() ?>
     </form>
 </div>

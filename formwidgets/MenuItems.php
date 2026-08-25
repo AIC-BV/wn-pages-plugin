@@ -36,10 +36,16 @@ class MenuItems extends FormWidgetBase
     public $newItemTitle = 'winter.pages::lang.menuitem.new_item';
 
     /**
+     * The form widget used to edit a single menu item.
+     */
+    protected $itemFormWidget = null;
+
+    /**
      * {@inheritDoc}
      */
     public function init()
     {
+        $this->getItemFormWidget();
     }
 
     /**
@@ -69,11 +75,42 @@ class MenuItems extends FormWidgetBase
 
         $this->vars['emptyItem'] = $emptyItem;
 
-        $widgetConfig = $this->makeConfig('~/plugins/winter/pages/classes/menuitem/fields.yaml');
-        $widgetConfig->model = $menuItem;
-        $widgetConfig->alias = $this->alias . 'MenuItem';
+        $this->vars['itemFormWidget'] = $this->getItemFormWidget();
+    }
 
-        $this->vars['itemFormWidget'] = $this->makeWidget('Backend\Widgets\Form', $widgetConfig);
+    /**
+     * Returns the form widget used by the menu item editor popup. Made on init
+     * rather than at render time so the item form's own widgets are bound to the
+     * controller on AJAX requests too, allowing their handlers to run.
+     *
+     * @return \Backend\Widgets\Form
+     */
+    protected function getItemFormWidget()
+    {
+        return $this->itemFormWidget ??= static::makeItemFormWidget($this->controller, $this->alias . 'MenuItem');
+    }
+
+    /**
+     * Makes the menu item editor form widget and binds it to the controller.
+     *
+     * The widget depends on nothing but its alias, which the editor popup posts
+     * back as `menuItemFormAlias`, so requests made from the popup can rebuild it
+     * without the menu they belong to - the popup sits outside the object form and
+     * carries none of its context.
+     *
+     * @param \Backend\Classes\Controller $controller
+     * @return \Backend\Widgets\Form
+     */
+    public static function makeItemFormWidget($controller, string $alias)
+    {
+        $widgetConfig = $controller->makeConfig('~/plugins/winter/pages/classes/menuitem/fields.yaml');
+        $widgetConfig->model = new MenuItem();
+        $widgetConfig->alias = $alias;
+
+        $widget = $controller->makeWidget('Backend\Widgets\Form', $widgetConfig);
+        $widget->bindToController();
+
+        return $widget;
     }
 
     /**
